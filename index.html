@@ -8,20 +8,46 @@
 body{
 margin:0;
 height:100vh;
-background:linear-gradient(to right,#56ab2f,#a8e063);
+font-family:Arial;
+overflow:hidden;
+color:white;
 display:flex;
 justify-content:center;
 align-items:center;
 flex-direction:column;
-font-family:Arial;
+background:black;
+}
+
+/* Intro Screen */
+#intro{
+position:absolute;
+width:100%;
+height:100%;
+background:linear-gradient(to right,#ff758c,#ff7eb3);
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
 text-align:center;
-color:white;
+cursor:pointer;
+}
+
+#main{
+display:none;
+height:100vh;
+width:100%;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+background:linear-gradient(to right,#ff758c,#ff7eb3);
+text-align:center;
 }
 
 .container{
 background:rgba(0,0,0,0.6);
 padding:40px;
 border-radius:20px;
+animation:fadeIn 2s ease-in-out;
 }
 
 button{
@@ -31,41 +57,115 @@ border:none;
 border-radius:30px;
 font-size:20px;
 cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.1);
 }
 
 #resultImage{
 margin-top:20px;
 width:200px;
 display:none;
+animation:zoomIn 1s ease-in-out;
 }
 
-#counter{
-margin-top:15px;
-font-size:18px;
+/* Typing name animation */
+#typedName{
+font-size:28px;
+color:pink;
+height:35px;
+margin-bottom:15px;
+}
+
+/* Floating hearts */
+.heart{
+position:absolute;
+color:red;
+font-size:20px;
+animation:float 5s linear infinite;
+}
+
+@keyframes float{
+0%{transform:translateY(100vh); opacity:1;}
+100%{transform:translateY(-10vh); opacity:0;}
+}
+
+/* Fireworks */
+.firework{
+position:absolute;
+width:10px;
+height:10px;
+background:yellow;
+border-radius:50%;
+animation:explode 1s ease-out forwards;
+}
+
+@keyframes explode{
+0%{transform:scale(1); opacity:1;}
+100%{transform:scale(15); opacity:0;}
+}
+
+/* Confetti */
+.confetti{
+position:absolute;
+width:10px;
+height:10px;
+opacity:0.8;
+animation:confettiFall linear forwards;
+}
+
+@keyframes confettiFall{
+0%{transform:translateY(-10px) rotate(0deg);}
+100%{transform:translateY(100vh) rotate(360deg);}
+}
+
+@keyframes fadeIn{
+from{opacity:0; transform:translateY(30px);}
+to{opacity:1; transform:translateY(0);}
+}
+
+@keyframes zoomIn{
+from{transform:scale(0);}
+to{transform:scale(1);}
 }
 </style>
 </head>
 
 <body>
 
+<!-- INTRO SCREEN -->
+<div id="intro" onclick="enterSite()">
+<h1>For Someone Very Special ❤️</h1>
+<h2>Tap Anywhere To Enter</h2>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
 <div class="container">
-<h1>Sangavi ❤️</h1>
-<h2>Are You Interested In...</h2>
+<div id="typedName"></div>
+<h3>Are You Interested In...</h3>
 
 <button onclick="submitChoice('Marriage 💍')">Marriage 💍</button>
 <button onclick="submitChoice('Friends 🤝')">Friends 🤝</button>
 
 <img id="resultImage" src="">
-
-<div id="counter">Total Responses: 0</div>
 <p id="status"></p>
 </div>
+</div>
 
-<!-- Firebase CDN -->
+<!-- Romantic Music -->
+<audio id="bgMusic" loop>
+<source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
+// Firebase config
 var firebaseConfig = {
   apiKey: "AIzaSyAARmSPKZMJNxq35G96FApRHApIF9R689o",
   authDomain: "code-40cb9.firebaseapp.com",
@@ -75,37 +175,120 @@ var firebaseConfig = {
   messagingSenderId: "951828492385",
   appId: "1:951828492385:web:925b07461cc576c3d5ba20"
 };
-
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
-// Live Counter
-database.ref("responses").on("value", function(snapshot){
-  document.getElementById("counter").innerHTML =
-  "Total Responses: " + snapshot.numChildren();
-});
-
-function submitChoice(choice){
-
-database.ref("responses").push({
-name: "Sangavi",
-decision: choice,
-time: new Date().toLocaleString()
-});
-
-document.getElementById("status").innerHTML =
-"Response Submitted Successfully ❤️";
-
-// Change Image
-var img = document.getElementById("resultImage");
-img.style.display="block";
-
-if(choice === "Marriage 💍"){
-img.src="https://cdn-icons-png.flaticon.com/512/833/833472.png";
-}else{
-img.src="https://cdn-icons-png.flaticon.com/512/833/833314.png";
+// Intro click
+function enterSite(){
+document.getElementById("intro").style.display="none";
+document.getElementById("main").style.display="flex";
+document.getElementById("bgMusic").play();
+startTypingName("Dear Sangavi ❤️");
 }
 
+// Floating hearts
+setInterval(function(){
+var heart = document.createElement("div");
+heart.className="heart";
+heart.innerHTML="❤️";
+heart.style.left=Math.random()*100+"vw";
+heart.style.fontSize=(Math.random()*20+10)+"px";
+document.body.appendChild(heart);
+setTimeout(()=>heart.remove(),5000);
+},500);
+
+// Fireworks
+function fireworks(){
+for(let i=0;i<10;i++){
+let fw=document.createElement("div");
+fw.className="firework";
+fw.style.left=Math.random()*100+"vw";
+fw.style.top=Math.random()*100+"vh";
+document.body.appendChild(fw);
+setTimeout(()=>fw.remove(),1000);
+}
+}
+
+// Confetti
+function confetti(){
+for(let i=0;i<30;i++){
+let c=document.createElement("div");
+c.className="confetti";
+c.style.left=Math.random()*100+"vw";
+c.style.backgroundColor=['gold','pink','lightblue','yellow'][Math.floor(Math.random()*4)];
+document.body.appendChild(c);
+setTimeout(()=>c.remove(),4000);
+}
+}
+
+// Typing effect for main heading
+function startTypingName(text){
+let i=0;
+let elem=document.getElementById("typedName");
+let interval=setInterval(()=>{
+if(i>=text.length){clearInterval(interval); return;}
+elem.innerHTML+=text.charAt(i);
+i++;
+},100);
+}
+
+// Submit choice
+function submitChoice(choice){
+if(localStorage.getItem("submitted")){
+document.getElementById("status").innerHTML="You have already responded ❤️";
+return;
+}
+
+database.ref("responses").push({
+name:"Sangavi",
+decision:choice,
+time:new Date().toLocaleString()
+});
+
+localStorage.setItem("submitted","yes");
+
+document.getElementById("status").innerHTML="Response Submitted Successfully ❤️";
+
+var img=document.getElementById("resultImage");
+img.style.display="block";
+
+if(choice==="Marriage 💍"){
+img.src="https://cdn-icons-png.flaticon.com/512/833/833472.png";
+fireworks();
+confetti();
+finalPopupTyping("💖 You chose Marriage! My heart beats only for you, Sangavi 💖");
+}else{
+img.src="https://cdn-icons-png.flaticon.com/512/833/833314.png";
+document.getElementById("main").style.background="linear-gradient(to right,#36d1dc,#5b86e5)";
+finalPopupTyping("🤝 You chose Friends! But you are still special to me, Sangavi ❤️");
+}
+
+// Play music if blocked
+document.getElementById("bgMusic").play();
+}
+
+// Typing effect popup
+function finalPopupTyping(text){
+let index=0;
+let alertDiv=document.createElement("div");
+alertDiv.style.position="fixed";
+alertDiv.style.top="50%";
+alertDiv.style.left="50%";
+alertDiv.style.transform="translate(-50%,-50%)";
+alertDiv.style.background="rgba(0,0,0,0.9)";
+alertDiv.style.color="pink";
+alertDiv.style.padding="30px";
+alertDiv.style.borderRadius="20px";
+alertDiv.style.textAlign="center";
+alertDiv.style.fontSize="20px";
+alertDiv.style.zIndex="9999";
+document.body.appendChild(alertDiv);
+
+let interval=setInterval(()=>{
+alertDiv.innerHTML=text.substring(0,index);
+index++;
+if(index>text.length){clearInterval(interval); setTimeout(()=>alertDiv.remove(),5000);}
+},50);
 }
 </script>
 
