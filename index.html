@@ -64,14 +64,6 @@ button:hover{
 transform:scale(1.1);
 }
 
-#resultImage{
-margin-top:20px;
-width:200px;
-display:none;
-animation:zoomIn 1s ease-in-out;
-}
-
-/* Typing name animation */
 #typedName{
 font-size:28px;
 color:pink;
@@ -150,15 +142,12 @@ to{transform:scale(1);}
 <button onclick="submitChoice('Marriage 💍')">Marriage 💍</button>
 <button onclick="submitChoice('Friends 🤝')">Friends 🤝</button>
 
-<img id="resultImage" src="">
 <p id="status"></p>
 </div>
 </div>
 
-<!-- Romantic Music -->
-<audio id="bgMusic" loop>
-<source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-</audio>
+<!-- Music Playlist -->
+<audio id="bgMusic" loop></audio>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -178,11 +167,33 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
+// Music playlist: Tamil + English romantic songs
+var playlist = [
+"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // English
+"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", // English
+"https://ia800304.us.archive.org/13/items/TamilRomanticSong/TamilRomantic.mp3" // Tamil
+];
+
+var musicIndex = 0;
+var bgMusic = document.getElementById("bgMusic");
+
+// Play next song with fade
+function playNextSong(){
+bgMusic.src = playlist[musicIndex];
+bgMusic.volume = 0;
+bgMusic.play();
+var fadeIn = setInterval(()=>{
+if(bgMusic.volume<1){bgMusic.volume+=0.02;}else{clearInterval(fadeIn);}
+},100);
+musicIndex = (musicIndex+1)%playlist.length;
+bgMusic.onended = playNextSong;
+}
+
 // Intro click
 function enterSite(){
 document.getElementById("intro").style.display="none";
 document.getElementById("main").style.display="flex";
-document.getElementById("bgMusic").play();
+playNextSong();
 startTypingName("Dear Sangavi ❤️");
 }
 
@@ -221,7 +232,7 @@ setTimeout(()=>c.remove(),4000);
 }
 }
 
-// Typing effect for main heading
+// Typing animation for name
 function startTypingName(text){
 let i=0;
 let elem=document.getElementById("typedName");
@@ -232,39 +243,24 @@ i++;
 },100);
 }
 
-// Submit choice
+// Submit choice (UNLIMITED)
 function submitChoice(choice){
-if(localStorage.getItem("submitted")){
-document.getElementById("status").innerHTML="You have already responded ❤️";
-return;
-}
-
 database.ref("responses").push({
 name:"Sangavi",
 decision:choice,
 time:new Date().toLocaleString()
 });
 
-localStorage.setItem("submitted","yes");
-
 document.getElementById("status").innerHTML="Response Submitted Successfully ❤️";
 
-var img=document.getElementById("resultImage");
-img.style.display="block";
-
 if(choice==="Marriage 💍"){
-img.src="https://cdn-icons-png.flaticon.com/512/833/833472.png";
 fireworks();
 confetti();
 finalPopupTyping("💖 You chose Marriage! My heart beats only for you, Sangavi 💖");
 }else{
-img.src="https://cdn-icons-png.flaticon.com/512/833/833314.png";
 document.getElementById("main").style.background="linear-gradient(to right,#36d1dc,#5b86e5)";
 finalPopupTyping("🤝 You chose Friends! But you are still special to me, Sangavi ❤️");
 }
-
-// Play music if blocked
-document.getElementById("bgMusic").play();
 }
 
 // Typing effect popup
@@ -291,6 +287,5 @@ if(index>text.length){clearInterval(interval); setTimeout(()=>alertDiv.remove(),
 },50);
 }
 </script>
-
 </body>
 </html>
